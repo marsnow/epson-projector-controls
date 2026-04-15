@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Epson 投影機控制台</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #1a1d23;
+      color: #e0e4ef;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      margin-bottom: 28px;
+      color: #a8c0ff;
+    }
+
+    /* ── 輸入區 ── */
+    .input-section {
+      width: 100%;
+      max-width: 640px;
+      background: #23273a;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #6b7699;
+      margin-bottom: 16px;
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .input-group {
+      background: #1a1d23;
+      border-radius: 8px;
+      padding: 14px 16px;
+      border: 1px solid #2e3450;
+      transition: border-color 0.2s;
+    }
+
+    .input-group:focus-within {
+      border-color: #5a7fff;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.72rem;
+      color: #6b7699;
+      margin-bottom: 8px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .input-group .group-label {
+      font-size: 0.85rem;
+      color: #a8c0ff;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .input-group input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #2e3450;
+      color: #e0e4ef;
+      font-size: 0.9rem;
+      padding: 4px 0;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-group input:focus {
+      border-bottom-color: #5a7fff;
+    }
+
+    .input-group input::placeholder {
+      color: #3d4566;
+    }
+
+    .input-field-row {
+      margin-bottom: 8px;
+    }
+
+    .input-field-row:last-child {
+      margin-bottom: 0;
+    }
+
+    /* 儲存按鈕 */
+    .save-btn {
+      display: block;
+      margin-top: 18px;
+      margin-left: auto;
+      padding: 10px 28px;
+      background: #3b5bdb;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .save-btn:hover { background: #4c6ef5; }
+    .save-btn:active { transform: scale(0.97); }
+
+    /* 儲存提示 */
+    .save-notice {
+      text-align: right;
+      font-size: 0.78rem;
+      color: #4caf7a;
+      margin-top: 8px;
+      height: 16px;
+      transition: opacity 0.4s;
+    }
+
+    /* ── 動作區 ── */
+    .action-section {
+      width: 100%;
+      max-width: 640px;
+      background: #23273a;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+      margin-bottom: 24px;
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .action-btn {
+      padding: 16px 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: filter 0.15s, transform 0.1s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .action-btn:hover  { filter: brightness(1.15); }
+    .action-btn:active { transform: scale(0.96); }
+
+    .action-btn .api-tag {
+      font-size: 0.68rem;
+      font-weight: 400;
+      opacity: 0.7;
+      letter-spacing: 0.06em;
+    }
+
+    .btn-v1-on  { background: #1b5e3b; color: #4caf7a; border: 1px solid #2e7d52; }
+    .btn-v1-off { background: #5e1b1b; color: #f07070; border: 1px solid #7d2e2e; }
+    .btn-v2-on  { background: #1a3d5e; color: #70b8f0; border: 1px solid #2e5d7d; }
+    .btn-v2-off { background: #3d1a5e; color: #c070f0; border: 1px solid #5d2e7d; }
+
+    /* ── 結果記錄區 ── */
+    .log-section {
+      width: 100%;
+      max-width: 640px;
+      background: #23273a;
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .clear-log-btn {
+      font-size: 0.75rem;
+      color: #6b7699;
+      background: none;
+      border: 1px solid #2e3450;
+      border-radius: 5px;
+      padding: 3px 10px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .clear-log-btn:hover { color: #e0e4ef; border-color: #5a7fff; }
+
+    #log-list {
+      list-style: none;
+      max-height: 220px;
+      overflow-y: auto;
+      font-size: 0.8rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    #log-list li {
+      padding: 5px 0;
+      border-bottom: 1px solid #1a1d23;
+      line-height: 1.5;
+    }
+
+    #log-list li:last-child { border-bottom: none; }
+
+    .log-time { color: #6b7699; margin-right: 8px; }
+    .log-ok   { color: #4caf7a; }
+    .log-err  { color: #f07070; }
+    .log-info { color: #a8c0ff; }
+  </style>
+</head>
+<body>
+
+  <h1>🎥 Epson 投影機控制台</h1>
+
+  <!-- ── 輸入區 ── -->
+  <section class="input-section">
+    <div class="section-title">投影機設定</div>
+    <div class="input-grid" id="projector-inputs">
+      <!-- 由 JS 動態產生 -->
+    </div>
+    <button class="save-btn" onclick="saveSettings()">💾 儲存設定</button>
+    <div class="save-notice" id="save-notice"></div>
+  </section>
+
+  <!-- ── 動作按鈕區 ── -->
+  <section class="action-section">
+    <div class="section-title">控制動作</div>
+    <div class="action-grid">
+      <button class="action-btn btn-v1-on"  onclick="sendAll('v1','on')">
+        V1 Mute On
+        <span class="api-tag">GET /api/v01 cmd=MUTE+ON</span>
+      </button>
+      <button class="action-btn btn-v1-off" onclick="sendAll('v1','off')">
+        V1 Mute Off
+        <span class="api-tag">GET /api/v01 cmd=MUTE+OFF</span>
+      </button>
+      <button class="action-btn btn-v2-on"  onclick="sendAll('v2','on')">
+        V2 Mute On
+        <span class="api-tag">PUT /api/v02 mute=on</span>
+      </button>
+      <button class="action-btn btn-v2-off" onclick="sendAll('v2','off')">
+        V2 Mute Off
+        <span class="api-tag">PUT /api/v02 mute=off</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ── 呼叫記錄 ── -->
+  <section class="log-section">
+    <div class="log-header">
+      <div class="section-title" style="margin-bottom:0">呼叫記錄</div>
+      <button class="clear-log-btn" onclick="clearLog()">清除</button>
+    </div>
+    <ul id="log-list">
+      <li><span class="log-time">--:--:--</span><span class="log-info">等待操作…</span></li>
+    </ul>
+  </section>
+
+<script>
+  const STORAGE_KEY = 'epson_projectors';
+  const COUNT = 4;
+
+  // ── 初始化輸入組 ──────────────────────────────────────────
+  function buildInputs() {
+    const container = document.getElementById('projector-inputs');
+    container.innerHTML = '';
+    for (let i = 1; i <= COUNT; i++) {
+      // 用 createElement 逐一建立，避免 innerHTML += 在 Safari 重新解析 DOM 的問題
+      const group = document.createElement('div');
+      group.className = 'input-group';
+      group.id = `group-${i}`;
+      group.innerHTML = `
+        <div class="group-label">投影機 ${i}</div>
+        <div class="input-field-row">
+          <label>名稱</label>
+          <input type="text" id="name-${i}" placeholder="例：會議室 A" />
+        </div>
+        <div class="input-field-row">
+          <label>IP 位址</label>
+          <input type="text" id="ip-${i}" placeholder="192.168.1.10" />
+        </div>`;
+      container.appendChild(group);
+    }
+  }
+
+  // ── localStorage 存取（含 try/catch，Safari file:// 可能限制存取）──
+  function storage(action, value) {
+    try {
+      if (action === 'get') return localStorage.getItem(STORAGE_KEY);
+      if (action === 'set') localStorage.setItem(STORAGE_KEY, value);
+    } catch (e) {
+      console.warn('localStorage 不可用（Safari file:// 限制）:', e);
+      return null;
+    }
+  }
+
+  function saveSettings() {
+    const data = [];
+    for (let i = 1; i <= COUNT; i++) {
+      data.push({
+        name: document.getElementById(`name-${i}`).value.trim(),
+        ip:   document.getElementById(`ip-${i}`).value.trim()
+      });
+    }
+    storage('set', JSON.stringify(data));
+
+    const notice = document.getElementById('save-notice');
+    notice.textContent = '✓ 已儲存';
+    notice.style.opacity = '1';
+    setTimeout(() => { notice.style.opacity = '0'; }, 2000);
+    addLog('info', '設定已儲存至 localStorage');
+  }
+
+  function loadSettings() {
+    const raw = storage('get');
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw);
+      data.forEach((proj, idx) => {
+        const i = idx + 1;
+        const nameEl = document.getElementById(`name-${i}`);
+        const ipEl   = document.getElementById(`ip-${i}`);
+        if (nameEl) nameEl.value = proj.name || '';
+        if (ipEl)   ipEl.value   = proj.ip   || '';
+      });
+    } catch (e) { console.warn('載入設定失敗', e); }
+  }
+
+  // ── 帶 timeout 的 fetch ───────────────────────────────────
+  const FETCH_TIMEOUT_MS = 5000;
+
+  function fetchWithTimeout(url, options = {}) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    return fetch(url, { ...options, signal: controller.signal })
+      .catch(err => {
+        if (err.name === 'AbortError') throw new Error(`連線逾時（${FETCH_TIMEOUT_MS / 1000} 秒）`);
+        throw err;
+      })
+      .finally(() => clearTimeout(timer));
+  }
+
+  // ── API 呼叫 ──────────────────────────────────────────────
+  function getProjectors() {
+    const list = [];
+    for (let i = 1; i <= COUNT; i++) {
+      const name = document.getElementById(`name-${i}`).value.trim();
+      const ip   = document.getElementById(`ip-${i}`).value.trim();
+      if (ip) list.push({ name: name || `投影機 ${i}`, ip });
+    }
+    return list;
+  }
+
+  async function callV1(ip, state) {
+    // GET http://[ip]/api/v01/control/escvp21?cmd=MUTE+ON|MUTE+OFF
+    const cmd = state === 'on' ? 'MUTE+ON' : 'MUTE+OFF';
+    const url  = `http://${ip}/api/v01/control/escvp21?cmd=${cmd}`;
+    const resp = await fetchWithTimeout(url, { method: 'GET' });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return resp;
+  }
+
+  async function callV2(ip, state) {
+    // PUT http://[ip]/api/v02/contentmgr/remote/mute   body: {"mute":"on"|"off"}
+    const url  = `http://${ip}/api/v02/contentmgr/remote/mute`;
+    const resp = await fetchWithTimeout(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mute: state })
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return resp;
+  }
+
+  function sendAll(version, state) {
+    const projectors = getProjectors();
+    if (projectors.length === 0) {
+      addLog('err', '尚未設定任何投影機 IP，請先填寫並儲存設定');
+      return;
+    }
+
+    const label = `${version.toUpperCase()} Mute ${state.toUpperCase()}`;
+    addLog('info', `▶ 同時傳送 [${label}] → ${projectors.length} 台投影機`);
+
+    const tasks = projectors.map(proj => {
+      const call = version === 'v1' ? callV1(proj.ip, state) : callV2(proj.ip, state);
+      return call
+        .then(() => addLog('ok',  `✓ [${proj.name}] ${proj.ip} — ${label} 成功`))
+        .catch(err => addLog('err', `✗ [${proj.name}] ${proj.ip} — ${err.message}`));
+    });
+
+    // 全部並行，不互相阻塞
+    Promise.allSettled(tasks);
+  }
+
+  // ── 記錄 ─────────────────────────────────────────────────
+  function addLog(type, msg) {
+    const ul   = document.getElementById('log-list');
+    const now  = new Date().toLocaleTimeString('zh-TW', { hour12: false });
+    const li   = document.createElement('li');
+    li.innerHTML = `<span class="log-time">${now}</span><span class="log-${type}">${msg}</span>`;
+    // 如果只剩第一條佔位訊息就移除
+    if (ul.children.length === 1 && ul.children[0].querySelector('.log-info')?.textContent === '等待操作…') {
+      ul.innerHTML = '';
+    }
+    ul.prepend(li);
+    // 最多保留 50 筆
+    while (ul.children.length > 50) ul.removeChild(ul.lastChild);
+  }
+
+  function clearLog() {
+    document.getElementById('log-list').innerHTML =
+      '<li><span class="log-time">--:--:--</span><span class="log-info">記錄已清除</span></li>';
+  }
+
+  // ── 啟動 ──────────────────────────────────────────────────
+  buildInputs();
+  loadSettings();
+</script>
+</body>
+</html>
