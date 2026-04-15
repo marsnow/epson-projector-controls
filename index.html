@@ -107,6 +107,32 @@
       margin-bottom: 0;
     }
 
+    /* 拜訪按鈕 */
+    .visit-btn {
+      display: none;
+      margin-top: 10px;
+      width: 100%;
+      padding: 6px 0;
+      background: transparent;
+      border: 1px solid #2e3450;
+      border-radius: 6px;
+      color: #6b7699;
+      font-size: 0.78rem;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+
+    .visit-btn.visible {
+      display: block;
+    }
+
+    .visit-btn:hover {
+      border-color: #5a7fff;
+      color: #a8c0ff;
+      background: #1a1d23;
+    }
+
     /* 儲存按鈕 */
     .save-btn {
       display: block;
@@ -306,9 +332,23 @@
         <div class="input-field-row">
           <label>IP 位址</label>
           <input type="text" id="ip-${i}" placeholder="192.168.1.10" />
-        </div>`;
+        </div>
+        <button class="visit-btn" id="visit-${i}" onclick="visitProjector(${i})">
+          🔗 開啟投影機網頁
+        </button>`;
       container.appendChild(group);
+
+      // IP 欄位有值時顯示拜訪按鈕
+      document.getElementById(`ip-${i}`).addEventListener('input', function () {
+        const btn = document.getElementById(`visit-${i}`);
+        btn.classList.toggle('visible', this.value.trim() !== '');
+      });
     }
+  }
+
+  function visitProjector(i) {
+    const ip = document.getElementById(`ip-${i}`).value.trim();
+    if (ip) window.open(`https://${ip}`, '_blank');
   }
 
   // ── localStorage 存取（含 try/catch，Safari file:// 可能限制存取）──
@@ -349,7 +389,12 @@
         const nameEl = document.getElementById(`name-${i}`);
         const ipEl   = document.getElementById(`ip-${i}`);
         if (nameEl) nameEl.value = proj.name || '';
-        if (ipEl)   ipEl.value   = proj.ip   || '';
+        if (ipEl) {
+          ipEl.value = proj.ip || '';
+          // 還原時同步顯示拜訪按鈕
+          const btn = document.getElementById(`visit-${i}`);
+          if (btn) btn.classList.toggle('visible', ipEl.value !== '');
+        }
       });
     } catch (e) { console.warn('載入設定失敗', e); }
   }
