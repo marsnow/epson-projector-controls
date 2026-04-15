@@ -256,7 +256,7 @@
     <div class="action-grid">
       <button class="action-btn btn-v1-on"  onclick="sendAll('v1','on')">
         V1 Mute On
-        <span class="api-tag">GET /api/v01 cmd=MUTE+ON</span>
+        <span class="api-tag">GET /api/v01 cmd=MUTE+ON (https)</span>
       </button>
       <button class="action-btn btn-v1-off" onclick="sendAll('v1','off')">
         V1 Mute Off
@@ -380,17 +380,17 @@
   }
 
   async function callV1(ip, state) {
-    // GET http://[ip]/api/v01/control/escvp21?cmd=MUTE+ON|MUTE+OFF
+    // GET https://[ip]/api/v01/control/escvp21?cmd=MUTE+ON|MUTE+OFF
     const cmd = state === 'on' ? 'MUTE+ON' : 'MUTE+OFF';
-    const url  = `http://${ip}/api/v01/control/escvp21?cmd=${cmd}`;
+    const url  = `https://${ip}/api/v01/control/escvp21?cmd=${cmd}`;
     const resp = await fetchWithTimeout(url, { method: 'GET' });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     return resp;
   }
 
   async function callV2(ip, state) {
-    // PUT http://[ip]/api/v02/contentmgr/remote/mute   body: {"mute":"on"|"off"}
-    const url  = `http://${ip}/api/v02/contentmgr/remote/mute`;
+    // PUT https://[ip]/api/v02/contentmgr/remote/mute   body: {"mute":"on"|"off"}
+    const url  = `https://${ip}/api/v02/contentmgr/remote/mute`;
     const resp = await fetchWithTimeout(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
